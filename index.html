@@ -1,0 +1,155 @@
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>WonderValleyMC | Attracties</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+html{scroll-behavior:smooth}
+body{font-family:Arial,Helvetica,sans-serif;color:#fff;overflow-x:hidden;background:radial-gradient(circle at 50% 0%,rgba(255,193,7,.24),transparent 34%),radial-gradient(circle at 10% 40%,rgba(255,116,0,.13),transparent 30%),linear-gradient(145deg,#211407,#0d0a07 55%,#050505)}
+body:before{content:"";position:fixed;inset:0;z-index:-1;pointer-events:none;opacity:.16;background-image:radial-gradient(circle,#fff 1px,transparent 1px);background-size:50px 50px}
+.hero{min-height:52vh;display:flex;align-items:center;justify-content:center;text-align:center;padding:65px 20px 45px}
+.hero-content{max-width:950px}
+.logo{width:min(420px,82vw);height:auto;display:block;margin:0 auto 28px;filter:drop-shadow(0 0 18px gold) drop-shadow(0 0 38px orange)}
+.hero h1{font-size:clamp(38px,7vw,70px);color:#ffd54d;margin-bottom:18px;text-shadow:0 0 12px rgba(255,215,0,.95),0 0 35px rgba(255,130,0,.55)}
+.hero h1 span{color:#fff}
+.hero p{color:#dedede;font-size:clamp(17px,2.2vw,22px);line-height:1.8}
+.attractions{padding:15px 0 90px}
+.container{width:min(1150px,92%);margin:auto}
+.intro{max-width:780px;margin:0 auto 45px;text-align:center;color:#aaa;line-height:1.75}
+.grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:25px}
+.card{position:relative;overflow:hidden;min-height:300px;padding:32px;border-radius:25px;background:rgba(255,255,255,.065);border:1px solid rgba(255,215,0,.22);box-shadow:0 16px 50px rgba(0,0,0,.3);backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);transition:.3s}
+.card:hover{transform:translateY(-8px);box-shadow:0 20px 55px rgba(0,0,0,.4),0 0 35px rgba(255,190,0,.14);border-color:rgba(255,215,0,.48)}
+.card:after{content:"";position:absolute;width:190px;height:190px;right:-95px;top:-95px;border-radius:50%;background:rgba(255,190,0,.08)}
+.icon{font-size:54px;margin-bottom:18px}
+.card h2{font-size:clamp(24px,4vw,34px);color:#ffd54d;margin-bottom:12px;text-shadow:0 0 10px rgba(255,190,0,.25)}
+.card p{color:#d2d2d2;line-height:1.75}
+.info{display:flex;gap:10px;flex-wrap:wrap;margin-top:22px}
+.badge{display:inline-flex;align-items:center;gap:7px;padding:8px 12px;border-radius:999px;background:rgba(0,0,0,.25);border:1px solid rgba(255,255,255,.12);font-size:14px;color:#ddd}
+.badge.open{border-color:rgba(80,220,120,.5);color:#8ff0a5}
+.badge.closed{border-color:rgba(255,100,100,.45);color:#ff9d9d}
+.badge.maintenance{border-color:rgba(255,190,0,.5);color:#ffd86b}
+#last-update{text-align:center;color:#777;font-size:13px;margin-top:28px}
+.error{text-align:center;color:#ff9d9d;margin:25px 0;display:none}
+.footer{padding:35px 20px;text-align:center;background:#050505;color:#888;line-height:1.8;border-top:1px solid rgba(255,215,0,.12)}
+@media(max-width:700px){.hero{min-height:46vh;padding:50px 15px 35px}.logo{width:300px}.grid{grid-template-columns:1fr}.card{min-height:auto;padding:28px 23px}}
+</style>
+</head>
+<body>
+<header class="hero">
+<div class="hero-content">
+<img class="logo" src="https://cdn.phototourl.com/free/2026-09-03-9a137872-1e64-4130-8c33-410ad4a88225.png" alt="WonderValleyMC logo">
+<h1>WonderValleyMC</h1>
+<p>Ontdek alle attracties van het magische hoofdpark van WonderValleyMC.</p>
+</div>
+</header>
+
+<main class="attractions">
+<div class="container">
+<p class="intro">Van spannende avonturen tot betoverende ervaringen: bekijk hieronder de attracties en hun actuele status vanuit de Minecraft-server.</p>
+<div id="error" class="error">De actuele attractiestatus kon niet worden opgehaald.</div>
+<section id="rides" class="grid"></section>
+<p id="last-update">Status wordt geladen...</p>
+</div>
+</main>
+
+<footer class="footer">
+<p>© 2026 WonderValleyMC • Alle rechten voorbehouden.</p>
+<p>WonderValleyMC is geen onderdeel van Mojang AB.</p>
+</footer>
+
+<script>
+// api.php moet naast deze HTML staan.
+// Staat de API ergens anders? Pas dit aan.
+const API_URL = "api.php";
+
+const fallbackIcons = {
+  "fantasia":"🎠",
+  "omas-koekhuis":"🍪",
+  "jungle-tiger":"🐯",
+  "wildwesttour":"🤠",
+  "wildwesttowers":"🗼",
+  "magische-broers":"🪄",
+  "danse-macabre":"💀"
+};
+
+const fallbackDescriptions = {
+  "fantasia":"Een betoverende attractie vol fantasie en magie in het hart van WonderValleyMC.",
+  "omas-koekhuis":"Stap binnen bij Oma's Koekhuis en ontdek een gezellige en smakelijke attractie.",
+  "jungle-tiger":"Ga op avontuur door de jungle en trotseer de spanning van JungleTiger.",
+  "wildwesttour":"Reis door het Wilde Westen en beleef een avontuurlijke tour door WonderValleyMC.",
+  "wildwesttowers":"Bekijk het Wilde Westen vanuit een heel ander perspectief bij WildWestTowers.",
+  "magische-broers":"Ontdek de magie en het avontuur van de mysterieuze Magische Broers.",
+  "danse-macabre":"Een duistere en mysterieuze ervaring voor bezoekers die wel tegen een beetje spanning kunnen."
+};
+
+function slug(text) {
+  return text.toLowerCase()
+    .normalize("NFD").replace(/[\u0300-\u036f]/g,"")
+    .replace(/[^a-z0-9]+/g,"-").replace(/^-|-$/g,"");
+}
+
+function statusInfo(status) {
+  switch ((status || "CLOSED").toUpperCase()) {
+    case "OPEN": return ["🟢", "OPEN", "open"];
+    case "MAINTENANCE": return ["🟠", "ONDERHOUD", "maintenance"];
+    default: return ["🔴", "GESLOTEN", "closed"];
+  }
+}
+
+function render(rides) {
+  const container = document.getElementById("rides");
+  container.innerHTML = "";
+
+  if (!rides.length) {
+    container.innerHTML = "<p style='grid-column:1/-1;text-align:center;color:#aaa'>Geen attracties beschikbaar.</p>";
+    return;
+  }
+
+  rides.forEach(ride => {
+    const id = ride.id || slug(ride.name);
+    const [emoji, statusText, statusClass] = statusInfo(ride.status);
+    const wait = Math.max(0, Number(ride.waitTime || 0));
+
+    const card = document.createElement("article");
+    card.className = "card";
+    card.innerHTML = `
+      <div class="icon">${fallbackIcons[id] || "🎢"}</div>
+      <h2>${escapeHtml(ride.name || id)}</h2>
+      <p>${escapeHtml(ride.description || fallbackDescriptions[id] || "Een fantastische attractie in WonderValleyMC.")}</p>
+      <div class="info">
+        <span class="badge ${statusClass}">${emoji} ${statusText}</span>
+        <span class="badge">🎟️ Wachttijd: ${wait} min</span>
+      </div>
+    `;
+    container.appendChild(card);
+  });
+}
+
+function escapeHtml(value) {
+  return String(value).replace(/[&<>"']/g, c => ({
+    "&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#039;"
+  }[c]));
+}
+
+async function loadRides() {
+  try {
+    const response = await fetch(API_URL + "?t=" + Date.now(), {cache:"no-store"});
+    if (!response.ok) throw new Error("HTTP " + response.status);
+    const data = await response.json();
+    render(data.rides || []);
+    document.getElementById("error").style.display = "none";
+    document.getElementById("last-update").textContent =
+      "Laatst bijgewerkt: " + new Date().toLocaleTimeString("nl-NL");
+  } catch (e) {
+    document.getElementById("error").style.display = "block";
+    document.getElementById("last-update").textContent = "Kan status niet laden.";
+  }
+}
+
+loadRides();
+setInterval(loadRides, 15000); // elke 15 seconden vernieuwen
+</script>
+</body>
+</html>
