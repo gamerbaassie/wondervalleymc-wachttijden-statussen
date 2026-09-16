@@ -2,7 +2,7 @@
 // Plaats dit bestand op je website als api.php.
 // Dezelfde API-key moet in plugin/config.yml en hieronder staan.
 
-$API_KEY = 'VERANDER-DIT-IN-EEN-LANGE-WILLEKEURIGE-SLEUTEL';
+$API_KEY = 'tWhB4u4hEJajDaox1Ln2';
 $dataFile = __DIR__ . '/rides.json';
 
 if ($_SERVER['REQUEST_METHOD'] === 'GET') {
